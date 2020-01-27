@@ -169,7 +169,12 @@
       <DependentUpon>202001241829497_updatedb1.vb</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202001241829497_updatedb1.vb" />
+    <Compile Include="Migrations\202001271544102_dbupdate2.designer.vb">
+      <DependentUpon>202001271544102_dbupdate2.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001271544102_dbupdate2.vb" />
     <Compile Include="Migrations\Configuration.vb" />
+    <Compile Include="Models\SeedData.vb" />
     <Compile Include="Models\Server.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -194,6 +199,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202001241829497_updatedb1.resx">
       <DependentUpon>202001241829497_updatedb1.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001271544102_dbupdate2.resx">
+      <DependentUpon>202001271544102_dbupdate2.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>

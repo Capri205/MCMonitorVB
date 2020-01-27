@@ -61,9 +61,9 @@ End Code
             </td>
             <td>
 				@If item.IsUp Then
-                    @<img src = "~\images\green_check_mark_circle.png" width="40px" height="40px" />
+                    @<img src = "/images/green_check_mark_circle.png" width="40px" height="40px" />
 				Else
-                    @<img src = "~\images\red_batsu_mark_circle.png" width="40px" height="40px" />
+                    @<img src = "/images/red_batsu_mark_circle.png" width="40px" height="40px" />
 				End If
             </td>
             <td>
@@ -73,6 +73,6 @@ End Code
                 @Html.DisplayFor(Function(modelItem) item.LastChecked)
             </td>
         </tr>
-        Next
+		Next
     </tbody>
 </table>
