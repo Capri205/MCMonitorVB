@@ -11,6 +11,20 @@ Namespace MCMonitorVB.Models
             Dim servers = New List(Of Server) From {
                 New Server With
                 {
+                    .Servername = "BungeeCord",
+                    .MCServername = "OB-Bungeecord",
+                    .Description = "Main Proxy for OB-Minecraft",
+                    .Engine = "Bungeecord",
+                    .EngineVersion = "1.15.1",
+                    .MCVersion = "1.15.1",
+                    .Hostname = "ob-mc1",
+                    .IPAddress = "192.168.1.52",
+                    .Port = 25565,
+                    .IsUp = False,
+                    .NumConnections = 0
+                },
+                New Server With
+                {
                     .Servername = "ob-lobby",
                     .MCServername = "Main Lobby",
                     .Description = "Main Lobby for OB-Minecraft",
