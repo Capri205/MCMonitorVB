@@ -1,8 +1,9 @@
 ﻿Imports System
-Imports System.Collections.Generic
 Imports System.Data
 Imports System.Data.Entity
 Imports System.IO
+Imports System.Dynamic
+Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Net
 Imports System.Web
@@ -28,9 +29,17 @@ Public Class HomeController
             Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port)
             System.Diagnostics.Debug.WriteLine("Debug - result:")
             System.Diagnostics.Debug.WriteLine(result)
-            REM Dim result As JObject = JObject.Parse(getServerStatus(dbServer.IPAddress, dbServer.Port).ToString)
-
-            dbServer.IsUp = isUP(dbServer.Id)
+            System.Diagnostics.Debug.WriteLine("debug - length = " + result.Length.ToString)
+            Dim jsondata = New JObject
+            Try
+                jsondata = JObject.Parse(result)
+                dbServer.IsUp = True
+                dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
+            Catch
+                dbServer.IsUp = False
+                dbServer.NumConnections = 0
+            End Try
+            REM Dim jsonobj = JsonConvert.DeserializeObject(result)
             dbServer.LastChecked = DateAndTime.Now
         Next
         db.SaveChanges()
@@ -69,12 +78,16 @@ Public Class HomeController
         postreqstream.Write(byteData, 0, byteData.Length)
         postreqstream.Close()
 
+        Dim status As String = ""
         Dim postresponse As HttpWebResponse
         postresponse = DirectCast(postReq.GetResponse(), HttpWebResponse)
         tempCookies.Add(postresponse.Cookies)
         logincookie = tempCookies
         Dim postreqreader As New StreamReader(postresponse.GetResponseStream())
-        Return postreqreader.ReadToEnd()
+        status = postreqreader.ReadToEnd()
+
+        Return status
+
     End Function
 
     Function isUP(ByVal id As Integer) As Boolean
