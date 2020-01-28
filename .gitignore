@@ -338,3 +338,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/MCMonitorVB/Migrations/202001262153544_initialcreate.Designer.vb
+/MCMonitorVB/Migrations/202001262153544_initialcreate.resx
+/MCMonitorVB/Migrations/202001262153544_initialcreate.vb

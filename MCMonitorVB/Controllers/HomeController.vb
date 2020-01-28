@@ -8,15 +8,28 @@ Imports System.Net
 Imports System.Web
 Imports System.Web.Mvc
 Imports MCMonitorVB.Models
+Imports Newtonsoft.Json
+Imports Newtonsoft.Json.Linq
 
 Public Class HomeController
     Inherits System.Web.Mvc.Controller
 
     Private db As New MCMonitorDbContext
+    Dim logincookie As CookieContainer
+
+    Structure JSONList
+        Dim Name, Email As String
+        Dim Age As Integer
+    End Structure
 
     Public Sub New()
         For Each dbServer In db.Servers
-            System.Diagnostics.Debug.WriteLine("Debug - result = " + getServerStatus(dbServer.IPAddress, dbServer.Port))
+            REM Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port)
+            Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port)
+            System.Diagnostics.Debug.WriteLine("Debug - result:")
+            System.Diagnostics.Debug.WriteLine(result)
+            REM Dim result As JObject = JObject.Parse(getServerStatus(dbServer.IPAddress, dbServer.Port).ToString)
+
             dbServer.IsUp = isUP(dbServer.Id)
             dbServer.LastChecked = DateAndTime.Now
         Next
@@ -40,26 +53,26 @@ Public Class HomeController
     End Function
 
     Private Function getServerStatus(ByVal ipaddr As String, ByVal port As Integer) As String
-        Dim postData As Byte() = Encoding.Default.GetBytes("ip=" + ipaddr + "&port=" + CStr(port))
-        Dim result As String = sendPost(postData)
-        Return result
-    End Function
-
-    Private Function sendPost(ByVal p As Byte()) As String
         Dim encoding As New UTF8Encoding
-        Dim byteData As Byte() = p
+        Dim tempCookies As New CookieContainer
+        Dim byteData As Byte() = encoding.Default.GetBytes("ip=" + ipaddr + "&port=" + CStr(port))
         Dim postReq As HttpWebRequest = DirectCast(WebRequest.Create("https://ob-mc.net/PHP-Minecraft-Query-master/serverping.php"), HttpWebRequest)
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
-        postReq.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; ru; rv:1.9.2.3) Gecko/20100401 Firefox/4.0 (.NET CLR 3.5.30729)"
+        postReq.CookieContainer = tempCookies
+        postReq.Referer = "https://ob-mc.net/PHP-Minecraft-Query-master/serverping.php"
+        postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
 
         Dim postreqstream As Stream = postReq.GetRequestStream()
         postreqstream.Write(byteData, 0, byteData.Length)
         postreqstream.Close()
+
         Dim postresponse As HttpWebResponse
         postresponse = DirectCast(postReq.GetResponse(), HttpWebResponse)
+        tempCookies.Add(postresponse.Cookies)
+        logincookie = tempCookies
         Dim postreqreader As New StreamReader(postresponse.GetResponseStream())
         Return postreqreader.ReadToEnd()
     End Function

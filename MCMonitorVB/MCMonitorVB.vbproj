@@ -56,6 +56,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -109,9 +112,6 @@
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
       <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
@@ -161,19 +161,6 @@
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202001241737034_InitialCreate.designer.vb">
-      <DependentUpon>202001241737034_InitialCreate.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202001241737034_InitialCreate.vb" />
-    <Compile Include="Migrations\202001241829497_updatedb1.designer.vb">
-      <DependentUpon>202001241829497_updatedb1.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202001241829497_updatedb1.vb" />
-    <Compile Include="Migrations\202001271544102_dbupdate2.designer.vb">
-      <DependentUpon>202001271544102_dbupdate2.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202001271544102_dbupdate2.vb" />
-    <Compile Include="Migrations\Configuration.vb" />
     <Compile Include="Models\SeedData.vb" />
     <Compile Include="Models\Server.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -194,15 +181,6 @@
     <Compile Include="Controllers\HomeController.vb" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202001241737034_InitialCreate.resx">
-      <DependentUpon>202001241737034_InitialCreate.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202001241829497_updatedb1.resx">
-      <DependentUpon>202001241829497_updatedb1.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202001271544102_dbupdate2.resx">
-      <DependentUpon>202001271544102_dbupdate2.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
@@ -277,6 +255,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="images\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

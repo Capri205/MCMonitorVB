@@ -19,7 +19,6 @@ Namespace Models
 
     Public Class MCMonitorDbContext
         Inherits DbContext
-
         Public Property Servers As DbSet(Of Server)
     End Class
 
