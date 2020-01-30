@@ -7,9 +7,10 @@ End Code
 <meta http-equiv="refresh" content="30">
 
 <div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    <h1>OB-Minecraft</h1>
+    <p class="lead">A small network of Minecraft servers that anyone can join and contribute to. Also features PlayerServer's where
+    players can create and run their very own server which also includes plugins!</p>
+    <p><a href="https://ob-mc.net" class="btn btn-primary btn-lg">Head over to ob-mc.net &raquo;</a></p>
 </div>
 
 <h2>Server dashboard</h2>
