@@ -25,21 +25,54 @@ Public Class HomeController
 
     Public Sub New()
         For Each dbServer In db.Servers
-            REM Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port)
+            System.Diagnostics.Debug.WriteLine("Debug -----------------------------------------")
+            System.Diagnostics.Debug.WriteLine("debug - querying " + dbServer.Id.ToString + ", " + dbServer.IPAddress + ", " + dbServer.Port.ToString)
             Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port)
-            System.Diagnostics.Debug.WriteLine("Debug - result:")
+            System.Diagnostics.Debug.WriteLine("debug - " + dbServer.Servername + " - result:")
             System.Diagnostics.Debug.WriteLine(result)
-            System.Diagnostics.Debug.WriteLine("debug - length = " + result.Length.ToString)
             Dim jsondata = New JObject
             Try
                 jsondata = JObject.Parse(result)
                 dbServer.IsUp = True
                 dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
+
+                Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
+                mcversion = Replace(mcversion, "Spigot ", "", 1)
+                mcversion = Replace(mcversion, "OB-BungeeCord ", "", 1)
+                mcversion = Replace(mcversion, "thermos,cauldron,craftbukkit,mcpc,kcauldron,fml,forge ", "", 1)
+                mcversion = Replace(mcversion, "Forge ", "", 1)
+                If dbServer.MCVersion <> mcversion Then
+                    dbServer.MCVersion = mcversion
+                End If
+
+                ' {"description":"",
+                '  "players":{"max":10,"online":0},
+                '  "version":{"name":"1.7.10","protocol":5},
+                '  "modinfo":{"type":"FML",
+                '             "modList":[{"modid":"mcp","version":"9.05"},
+                '                        {"modid":"FML","version":"7.10.99.99"},
+                '                        {"modid":"Forge","version":"10.13.4.1614"},
+                '                        {"modid":"kimagine","version":"0.2"},
+                '                        {"modid":"obmetaproducer","version":"0.1"},
+                '                        {"modid":"OreSpawn","version":"1.7.10.20.2"},
+                '                        {"modid":"worldedit","version":"6.1.1"}
+                '                       ]
+                '            }
+                ' }
+
+                Dim engine As String = ""
+                If jsondata.ContainsKey("modinfo") Then
+                    If jsondata.SelectToken("modinfo").SelectToken("type") = "FML" Then
+                        Dim modlist As JArray = CType(jsondata.SelectToken("modinfo")("modList"), JArray)
+                        For Each item As JObject In modlist
+                            System.Diagnostics.Debug.WriteLine("debug - modlist: " + CType(item("modid"), String) + " - " + CType(item("version"), String))
+                        Next
+                    End If
+                End If
             Catch
                 dbServer.IsUp = False
                 dbServer.NumConnections = 0
             End Try
-            REM Dim jsonobj = JsonConvert.DeserializeObject(result)
             dbServer.LastChecked = DateAndTime.Now
         Next
         db.SaveChanges()
@@ -63,15 +96,15 @@ Public Class HomeController
 
     Private Function getServerStatus(ByVal ipaddr As String, ByVal port As Integer) As String
         Dim encoding As New UTF8Encoding
-        Dim tempCookies As New CookieContainer
+        'Dim tempCookies As New CookieContainer
         Dim byteData As Byte() = encoding.Default.GetBytes("ip=" + ipaddr + "&port=" + CStr(port))
         Dim postReq As HttpWebRequest = DirectCast(WebRequest.Create("https://ob-mc.net/PHP-Minecraft-Query-master/serverping.php"), HttpWebRequest)
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
-        postReq.CookieContainer = tempCookies
+        'postReq.CookieContainer = tempCookies
         postReq.Referer = "https://ob-mc.net/PHP-Minecraft-Query-master/serverping.php"
-        postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
+        'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
 
         Dim postreqstream As Stream = postReq.GetRequestStream()
@@ -81,8 +114,8 @@ Public Class HomeController
         Dim status As String = ""
         Dim postresponse As HttpWebResponse
         postresponse = DirectCast(postReq.GetResponse(), HttpWebResponse)
-        tempCookies.Add(postresponse.Cookies)
-        logincookie = tempCookies
+        'tempCookies.Add(postresponse.Cookies)
+        'logincookie = tempCookies
         Dim postreqreader As New StreamReader(postresponse.GetResponseStream())
         status = postreqreader.ReadToEnd()
 
