@@ -180,6 +180,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
+    <Compile Include="Views\Shared\GlobalVariables.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -220,6 +221,7 @@
     <Content Include="Scripts\jquery-3.4.1.slim.min.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
+    <Content Include="sounds\joined.wav" />
     <Content Include="Views\Servers\Create.vbhtml" />
     <Content Include="Views\Servers\Delete.vbhtml" />
     <Content Include="Views\Servers\Details.vbhtml" />

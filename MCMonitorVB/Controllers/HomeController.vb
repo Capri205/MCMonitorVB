@@ -11,62 +11,129 @@ Imports System.Web.Mvc
 Imports MCMonitorVB.Models
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
+Imports GlobalVariables
 
 Public Class HomeController
     Inherits System.Web.Mvc.Controller
 
     Private db As New MCMonitorDbContext
     Dim logincookie As CookieContainer
-
-    Structure JSONList
-        Dim Name, Email As String
-        Dim Age As Integer
-    End Structure
+    Dim querytype As String = "ping"
 
     Public Sub New()
+
+        GlobalVariables.playjoinsound = False
+        GlobalVariables.playleavesound = False
+
         For Each dbServer In db.Servers
+
+            GlobalVariables.jointrackerDirection(dbServer.Servername) = "NoChange"
+
             System.Diagnostics.Debug.WriteLine("Debug -----------------------------------------")
             System.Diagnostics.Debug.WriteLine("debug - querying " + dbServer.Id.ToString + ", " + dbServer.IPAddress + ", " + dbServer.Port.ToString)
-            Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port)
-            System.Diagnostics.Debug.WriteLine("debug - " + dbServer.Servername + " - result:")
-            System.Diagnostics.Debug.WriteLine(result)
+            Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port, dbServer.Engine)
             Dim jsondata = New JObject
             Try
                 jsondata = JObject.Parse(result)
                 dbServer.IsUp = True
-                dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
+                If dbServer.Engine = "Source" Then
+                    '
+                    ' SOURCE
+                    '
 
-                Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
-                mcversion = Replace(mcversion, "Spigot ", "", 1)
-                mcversion = Replace(mcversion, "OB-BungeeCord ", "", 1)
-                mcversion = Replace(mcversion, "thermos,cauldron,craftbukkit,mcpc,kcauldron,fml,forge ", "", 1)
-                mcversion = Replace(mcversion, "Forge ", "", 1)
-                If dbServer.MCVersion <> mcversion Then
-                    dbServer.MCVersion = mcversion
-                End If
+                    ' {"Protocol":17,"HostName":"OB-CounterStrike","Map":"cs_militia","ModDir":"csgo",
+                    '  "ModDesc":"Counter-Strike: Global Offensive","AppID":730,"Players":0,"MaxPlayers":30,"Bots":0,
+                    '  "Dedicated":"d","Os":"l","Password":false,"Secure":true,"Version":"1.37.4.0",
+                    '  "ExtraDataFlags":161,"GamePort":27015,"GameTags":"empty,secure","GameID":730}
 
-                ' {"description":"",
-                '  "players":{"max":10,"online":0},
-                '  "version":{"name":"1.7.10","protocol":5},
-                '  "modinfo":{"type":"FML",
-                '             "modList":[{"modid":"mcp","version":"9.05"},
-                '                        {"modid":"FML","version":"7.10.99.99"},
-                '                        {"modid":"Forge","version":"10.13.4.1614"},
-                '                        {"modid":"kimagine","version":"0.2"},
-                '                        {"modid":"obmetaproducer","version":"0.1"},
-                '                        {"modid":"OreSpawn","version":"1.7.10.20.2"},
-                '                        {"modid":"worldedit","version":"6.1.1"}
-                '                       ]
-                '            }
-                ' }
+                    ' {"Protocol":17,"HostName":"OB-GMod Server - PVP Sandbox * M9K|Simfp|Gredwitch|LFS| NoRank!",
+                    '  "Map":"gmod_fort_map","ModDir":"garrysmod","ModDesc":"Sandbox","AppID":4000,"Players":0,"MaxPlayers":16,
+                    '  "Bots":0,"Dedicated":"d","Os":"l","Password":false,"Secure":true,"Version":"2019.11.12",
+                    '  "ExtraDataFlags":177,"GamePort":27016,"SteamID":90132776141476868,"GameTags":" gm:sandbox","GameID":4000}
+                    dbServer.NumConnections = jsondata.SelectToken("Players")
+                    If CheckPlayerCountChange(dbServer.Servername, dbServer.NumConnections) Then
+                        If GlobalVariables.jointrackerDirection(dbServer.Servername) = "Down" Then
+                            GlobalVariables.playleavesound = True
+                        End If
+                        If GlobalVariables.jointrackerDirection(dbServer.Servername) = "Up" Then
+                            GlobalVariables.playjoinsound = True
+                        End If
+                    End If
 
-                Dim engine As String = ""
-                If jsondata.ContainsKey("modinfo") Then
-                    If jsondata.SelectToken("modinfo").SelectToken("type") = "FML" Then
-                        Dim modlist As JArray = CType(jsondata.SelectToken("modinfo")("modList"), JArray)
-                        For Each item As JObject In modlist
-                            System.Diagnostics.Debug.WriteLine("debug - modlist: " + CType(item("modid"), String) + " - " + CType(item("version"), String))
-                        Next
+                    If dbServer.EngineVersion <> jsondata.SelectToken("Version") Then
+                        dbServer.EngineVersion = jsondata.SelectToken("Version")
+                    End If
+                Else
+                    '
+                    ' MINECRAFT
+                    '
+
+                    ' {"description": {"text":""},
+                    '  "players":{"max":10,"online":1,"sample":[{"id":"175d4ce8-cc2e-47fe-bfa5-89e711c89084","name":"sean_ob"}]},
+                    '  "version":{"name":"Spigot 1.15.2","protocol":578},"favicon":"data:image/png;base64,..."}
+                    '
+                    ' {"description":"",
+                    '  "players":{"max":10,"online":0},
+                    '  "version":{"name":"1.7.10","protocol":5},
+                    '  "modinfo":{"type":"FML",
+                    '             "modList":[{"modid":"mcp","version":"9.05"},
+                    '                        {"modid":"FML","version":"7.10.99.99"},
+                    '                        {"modid":"Forge","version":"10.13.4.1614"},
+                    '                        {"modid":"kimagine","version":"0.2"},
+                    '                        {"modid":"obmetaproducer","version":"0.1"},
+                    '                        {"modid":"OreSpawn","version":"1.7.10.20.2"},
+                    '                        {"modid":"worldedit","version":"6.1.1"}
+                    '                       ]
+                    '            }
+                    ' }
+
+                    System.Diagnostics.Debug.WriteLine("debug - result=" & result)
+                    dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
+                    If CheckPlayerCountChange(dbServer.Servername, dbServer.NumConnections) Then
+                        If GlobalVariables.jointrackerDirection(dbServer.Servername) = "Up" Then
+                            GlobalVariables.playjoinsound = True
+                            Dim playerlist As JArray = jsondata.SelectToken("players").SelectToken("sample")
+                            If Not (playerlist Is Nothing) Then
+                                Dim idx As Integer = playerlist.Count - 1
+                                ' work in progress
+                                'If CountPlayersForServer(dbServer.Servername, GlobalVariables.jointrackerPlayer) = 5 Then
+                                '   RemoveOldestPlayerForServer(dbServer.Servername, GlobalVariables.jointrackerPlayer)
+                                'End If
+                                GlobalVariables.jointrackerPlayer(dbServer.Servername) = CType(playerlist.Item(idx).Item("name"), String) & " @ " & DateTime.Now.ToString("MM/dd HH:mm")
+                            End If
+                        ElseIf GlobalVariables.jointrackerDirection(dbServer.Servername) = "Down" Then
+                            GlobalVariables.playleavesound = True
+                            ' work in progress
+                            ' remove departed player from list
+                        End If
+                    End If
+                    Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
+                    mcversion = Replace(mcversion, "Spigot ", "", 1)
+                    mcversion = Replace(mcversion, "OB-BungeeCord ", "", 1)
+                    mcversion = Replace(mcversion, "thermos,cauldron,craftbukkit,mcpc,kcauldron,fml,forge ", "", 1)
+                    mcversion = Replace(mcversion, "Forge ", "", 1)
+                    If dbServer.MCVersion <> mcversion Then
+                        dbServer.MCVersion = mcversion
+                    End If
+                    Dim engine As String = ""
+                    If jsondata.ContainsKey("modinfo") Then
+                        If jsondata.SelectToken("modinfo").SelectToken("type") = "FML" Then
+                            engine = jsondata.SelectToken("modinfo").SelectToken("type").ToString
+                            Dim modlist As JArray = CType(jsondata.SelectToken("modinfo")("modList"), JArray)
+                            For Each item As JObject In modlist
+                                If CType(item("modid"), String) = "Forge" Then
+                                    Dim engineversion As String = CType(item("version"), String)
+                                    If dbServer.EngineVersion <> engineversion Then
+                                        dbServer.EngineVersion = engineversion
+                                    End If
+                                End If
+                            Next
+                        End If
+                    Else
+                        engine = jsondata.SelectToken("version").SelectToken("name").ToString.Substring(0, jsondata.SelectToken("version").SelectToken("name").ToString.IndexOf(" "))
+                    End If
+                    If engine <> dbServer.Engine Then
+                        dbServer.Engine = engine
                     End If
                 End If
             Catch
@@ -94,16 +161,32 @@ Public Class HomeController
         Return View()
     End Function
 
-    Private Function getServerStatus(ByVal ipaddr As String, ByVal port As Integer) As String
+    Private Function getServerStatus(ByVal ipaddr As String, ByVal port As Integer, ByVal servertype As String) As String
         Dim encoding As New UTF8Encoding
         'Dim tempCookies As New CookieContainer
-        Dim byteData As Byte() = encoding.Default.GetBytes("ip=" + ipaddr + "&port=" + CStr(port))
-        Dim postReq As HttpWebRequest = DirectCast(WebRequest.Create("https://ob-mc.net/PHP-Minecraft-Query-master/serverping.php"), HttpWebRequest)
+        Dim databytestr As String = ""
+        If (servertype = "Source") Then
+            databytestr = "svrtype=Source"
+        ElseIf (servertype = "Spigot" Or servertype = "Paper" Or servertype = "FML") Then
+            databytestr = "svrtype=Minecraft"
+        End If
+        databytestr = databytestr + "&ip=" + ipaddr + "&port=" + CStr(port)
+        Dim byteData As Byte() = encoding.Default.GetBytes(databytestr)
+        Dim postReq As HttpWebRequest
+        If (querytype = "ping") Then
+            postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
+        Else
+            postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
+        End If
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
         'postReq.CookieContainer = tempCookies
-        postReq.Referer = "https://ob-mc.net/PHP-Minecraft-Query-master/serverping.php"
+        If (querytype = "ping") Then
+            postReq.Referer = "https://ob-mc.net/mcquery/serverping.php"
+        Else
+            postReq.Referer = "https://ob-mc.net/mcquery/serverquery.php"
+        End If
         'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
 
@@ -112,8 +195,7 @@ Public Class HomeController
         postreqstream.Close()
 
         Dim status As String = ""
-        Dim postresponse As HttpWebResponse
-        postresponse = DirectCast(postReq.GetResponse(), HttpWebResponse)
+        Dim postresponse As HttpWebResponse = DirectCast(postReq.GetResponse(), HttpWebResponse)
         'tempCookies.Add(postresponse.Cookies)
         'logincookie = tempCookies
         Dim postreqreader As New StreamReader(postresponse.GetResponseStream())
@@ -123,20 +205,30 @@ Public Class HomeController
 
     End Function
 
-    Function isUP(ByVal id As Integer) As Boolean
-        REM TODO: Debug code - Replace with server metadata lookup
-        Select Case id
-            Case 1 To 5
-                isUP = True
-            Case 6
-                isUP = False
-            Case 7 To 11
-                isUP = True
-            Case 12
-                isUP = False
-            Case 13 To 18 : isUP = True
-            Case Else
-                isUP = False
-        End Select
+    Private Function CheckPlayerCountChange(ByVal server As String, ByVal numcons As Integer)
+        Dim countchanged As Boolean = False
+        If server <> "ob-bungee" Then
+            If GlobalVariables.jointrackerConCnt.ContainsKey(server) Then
+                If numcons > GlobalVariables.jointrackerConCnt(server) Then
+                    System.Diagnostics.Debug.WriteLine("debug - player count up for " & server & " - conns changed to " & numcons)
+                    countchanged = True
+                    GlobalVariables.jointrackerDirection(server) = "Up"
+                ElseIf numcons < GlobalVariables.jointrackerConCnt(server) Then
+                    System.Diagnostics.Debug.WriteLine("debug - player count down for " & server & " - conns changed to " & numcons)
+                    countchanged = True
+                    GlobalVariables.jointrackerDirection(server) = "Down"
+                End If
+                GlobalVariables.jointrackerConCnt(server) = numcons
+            Else
+                GlobalVariables.jointrackerConCnt.Add(server, numcons)
+                ' catch case where monitoring just starting and someone is in
+                If numcons > 0 Then
+                    countchanged = True
+                    GlobalVariables.jointrackerDirection(server) = "Up"
+                End If
+            End If
+        End If
+        Return countchanged
     End Function
+
 End Class

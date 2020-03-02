@@ -274,6 +274,34 @@ Namespace MCMonitorVB.Models
                     .Port = 26060,
                     .IsUp = False,
                     .NumConnections = 0
+                },
+                New Server With
+                {
+                    .Servername = "OB-CounterStrike",
+                    .MCServername = "OB-CounterStrike",
+                    .Description = "OB CSGO Server",
+                    .Engine = "Source",
+                    .EngineVersion = "1",
+                    .MCVersion = "1",
+                    .Hostname = "ob-st1",
+                    .IPAddress = "192.168.1.55",
+                    .Port = 26015,
+                    .IsUp = False,
+                    .NumConnections = 0
+                },
+                New Server With
+                {
+                    .Servername = "OB-GMod",
+                    .MCServername = "OB-GMod",
+                    .Description = "OB Garry's Mod Server",
+                    .Engine = "Source",
+                    .EngineVersion = "1",
+                    .MCVersion = "1",
+                    .Hostname = "ob-st1",
+                    .IPAddress = "192.168.1.55",
+                    .Port = 26016,
+                    .IsUp = False,
+                    .NumConnections = 0
                 }
             }
             servers.ForEach(Function(d) context.Servers.Add(d))
