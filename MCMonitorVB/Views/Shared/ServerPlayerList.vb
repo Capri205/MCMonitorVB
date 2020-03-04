@@ -9,7 +9,6 @@ Imports System.Net
 Imports System.Web
 Imports System.Web.Mvc
 Imports Newtonsoft.Json.Linq
-Imports GlobalVariables
 
 ' Class to maintain a historical list of players that have joined for a server
 '	Instantiated per server and tracks player with timestamp
@@ -38,12 +37,21 @@ Public Class ServerPlayerList
 	End Sub
 
 	' Return a concatenated player and timestamp string
-	Public Function GetPlayerListConcat()
-		Dim concatenatedList = New ArrayList()
+	Public Function GetPlayerListConcat() As List(Of String)
+		Dim concatenatedList = New List(Of String)
 		For Each key In playerList.Keys
 			concatenatedList.Add(playerList(key) & " @ " & key.substring(0, key.IndexOf(".")))
 		Next
 		Return concatenatedList
+	End Function
+
+	' Return the latest player from list with timestamp
+	Public Function GetLatestPlayerConcat() As String
+		If playerList.Count > 0 Then
+			Return playerList.GetByIndex(playerList.Count - 1) & " @ " & playerList.GetKey(playerList.Count - 1).substring(0, playerList.GetKey(playerList.Count - 1).IndexOf("."))
+		Else
+			Return "no data"
+		End If
 	End Function
 
 	' Remove a player from the list
@@ -68,26 +76,26 @@ Public Class ServerPlayerList
 
 	'Perform a full sync up between actual players and recorded list
 	Public Sub SyncList(ByRef jlist As JArray)
-		' convert the json array to arraylist - might be a better way of doing this.
-		Dim in_playerlist As New ArrayList()
+		' convert the json array to a list - might be a better way of doing this.
+		Dim srvplayerlist As New List(Of String)
 		For Each item As JObject In jlist
 			System.Diagnostics.Debug.WriteLine("debug - currentlist add " & CType(item.Item("name"), String))
-			in_playerlist.Add(CType(item.Item("name"), String))
+			srvplayerlist.Add(CType(item.Item("name"), String))
 		Next
 		' add misisng players - multiple might have joined since we last checked
 		'	some might have left also in the interim... cant catch them all with this
 		'	style of monitoring - requires server side plugin to do that.
-		For Each addplayer In in_playerlist
+		For Each addplayer As String In srvplayerlist
 			If Not playerList.ContainsValue(addplayer) Then
 				Add(addplayer)
 			End If
 		Next
 		' remove anyone who's left - can't update the list directly from foreach loop, so
 		'	save off those we need to remove to a separate list and delete afterwards
-		Dim removeList As New ArrayList()
+		Dim removeList As New List(Of String)
 		For Each key In playerList.Keys
 			System.Diagnostics.Debug.WriteLine("debug - checking " & playerList(key) & " is in list")
-			If Not in_playerlist.Contains(playerList(key)) Then
+			If Not srvplayerlist.Exists(playerList(key)) Then
 				System.Diagnostics.Debug.WriteLine("debug - removing " & playerList(key) & " from list")
 				removeList.Add(key)
 			End If
@@ -99,6 +107,5 @@ Public Class ServerPlayerList
 		For Each key In playerList.Keys
 			System.Diagnostics.Debug.WriteLine("debug - " & key & " @ " & playerList(key))
 		Next
-
 	End Sub
 End Class

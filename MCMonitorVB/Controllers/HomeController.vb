@@ -11,8 +11,7 @@ Imports System.Web.Mvc
 Imports MCMonitorVB.Models
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
-Imports ServerPlayerList
-Imports GlobalVariables
+
 
 Public Class HomeController
     Inherits System.Web.Mvc.Controller
@@ -28,17 +27,20 @@ Public Class HomeController
 
         For Each dbServer In db.Servers
 
-            'System.Diagnostics.Debug.WriteLine("debug -----------------------------------------")
+            System.Diagnostics.Debug.WriteLine("debug -----------------------------------------")
             ' Add our server to the tracker list of not already there
             If Not GlobalVariables.serverPlayerTracker.ContainsKey(dbServer.Servername) Then
                 GlobalVariables.serverPlayerTracker.Add(dbServer.Servername, New ServerPlayerList())
                 System.Diagnostics.Debug.WriteLine("debug - adding " & dbServer.Servername & " tracker")
             End If
 
+            ' Assume no change from prior check - determines sounds to play and possibly other things later
             GlobalVariables.jointrackerDirection(dbServer.Servername) = "NoChange"
 
-            'System.Diagnostics.Debug.WriteLine("debug - querying " + dbServer.Id.ToString + ", " + dbServer.IPAddress + ", " + dbServer.Port.ToString)
+            ' Query the server
             Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port, dbServer.Engine)
+            System.Diagnostics.Debug.WriteLine("debug - result=" & result)
+
             Dim jsondata = New JObject
             Try
                 jsondata = JObject.Parse(result)
@@ -94,9 +96,9 @@ Public Class HomeController
                     '            }
                     ' }
 
-                    If dbServer.Servername = "ob-murder" Or dbServer.Servername = "ob-lobby" Then
-                        System.Diagnostics.Debug.WriteLine("debug - result=" & result)
-                    End If
+                    'If dbServer.Servername = "ob-murder" Or dbServer.Servername = "ob-lobby" Then
+                    'System.Diagnostics.Debug.WriteLine("debug - result=" & result)
+                    'End If
                     dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
                     If CheckPlayerCountChange(dbServer.Servername, dbServer.NumConnections) Then
                         Dim playerlist As JArray = CType(jsondata.SelectToken("players").SelectToken("sample"), JArray)
@@ -184,23 +186,15 @@ Public Class HomeController
         ElseIf (servertype = "Spigot" Or servertype = "Paper" Or servertype = "FML") Then
             databytestr = "svrtype=Minecraft"
         End If
-        databytestr = databytestr + "&ip=" + ipaddr + "&port=" + CStr(port)
-        Dim byteData As Byte() = encoding.Default.GetBytes(databytestr)
+        databytestr = databytestr + "&ip=" & ipaddr & "&port=" & CStr(port)
+        Dim byteData As Byte() = encoding.GetBytes(databytestr)
         Dim postReq As HttpWebRequest
-        If (querytype = "ping") Then
-            postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
-        Else
-            postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
-        End If
+        postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
         'postReq.CookieContainer = tempCookies
-        If (querytype = "ping") Then
-            postReq.Referer = "https://ob-mc.net/mcquery/serverping.php"
-        Else
-            postReq.Referer = "https://ob-mc.net/mcquery/serverquery.php"
-        End If
+        postReq.Referer = "https://ob-mc.net/serverquery/query.php"
         'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
 

@@ -1,9 +1,8 @@
 ﻿Public Class GlobalVariables
 	' Use for tracking players joining
-	Public Shared jointrackerConCnt = New Hashtable()
-	Public Shared jointrackerPlayer = New Hashtable()
+	Public Shared jointrackerConCnt = New Dictionary(Of String, Integer)
 	Public Shared serverPlayerTracker = New Dictionary(Of String, Object)
-	Public Shared jointrackerDirection = New Hashtable()
+	Public Shared jointrackerDirection = New Dictionary(Of String, String)
 	' Use for triggering a client side sound
 	Public Shared playjoinsound As Boolean
 	Public Shared playleavesound As Boolean

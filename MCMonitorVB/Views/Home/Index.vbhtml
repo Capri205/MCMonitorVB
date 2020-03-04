@@ -63,9 +63,9 @@ End Code
                 </td>
                 <td>
                     @If item.IsUp Then
-                        @<img src="/images/green_check_mark_circle.png" width="40px" height="40px" />
+                        @<img src="/images/green_check_mark_circle.png" style="width:40px;height:40px" />
 					Else
-                        @<img src="/images/red_batsu_mark_circle.png" width="40px" height="40px" />
+                        @<img src="/images/red_batsu_mark_circle.png" style="width:40px;height:40px" />
 					End If
                 </td>
                 <td>
@@ -77,15 +77,15 @@ End Code
                 <td>
                     @If GlobalVariables.jointrackerDirection(item.Servername) = "Up" Then
                         @<span style="color:mediumvioletred">
-                            @GlobalVariables.jointrackerPlayer(item.Servername)
+                            @GlobalVariables.serverPlayerTracker.Item(item.Servername).GetLatestPlayerConcat()
                         </span>
 					Else
                         @If GlobalVariables.jointrackerDirection(item.Servername) = "Down" Then
                             @<span style="color:indigo">
-                                @GlobalVariables.jointrackerPlayer(item.Servername)
+                                @GlobalVariables.serverPlayerTracker.Item(item.Servername).GetLatestPlayerConcat()
                             </span>
 						Else
-                            @GlobalVariables.jointrackerPlayer(item.Servername)
+                            @GlobalVariables.serverPlayerTracker.Item(item.Servername).GetLatestPlayerConcat()
 						End If
 					End If
                 </td>
