@@ -181,6 +181,7 @@
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
     <Compile Include="Views\Shared\GlobalVariables.vb" />
+    <Compile Include="Views\Shared\ServerPlayerList.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

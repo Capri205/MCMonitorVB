@@ -11,6 +11,7 @@ Imports System.Web.Mvc
 Imports MCMonitorVB.Models
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
+Imports ServerPlayerList
 Imports GlobalVariables
 
 Public Class HomeController
@@ -27,10 +28,16 @@ Public Class HomeController
 
         For Each dbServer In db.Servers
 
+            'System.Diagnostics.Debug.WriteLine("debug -----------------------------------------")
+            ' Add our server to the tracker list of not already there
+            If Not GlobalVariables.serverPlayerTracker.ContainsKey(dbServer.Servername) Then
+                GlobalVariables.serverPlayerTracker.Add(dbServer.Servername, New ServerPlayerList())
+                System.Diagnostics.Debug.WriteLine("debug - adding " & dbServer.Servername & " tracker")
+            End If
+
             GlobalVariables.jointrackerDirection(dbServer.Servername) = "NoChange"
 
-            System.Diagnostics.Debug.WriteLine("Debug -----------------------------------------")
-            System.Diagnostics.Debug.WriteLine("debug - querying " + dbServer.Id.ToString + ", " + dbServer.IPAddress + ", " + dbServer.Port.ToString)
+            'System.Diagnostics.Debug.WriteLine("debug - querying " + dbServer.Id.ToString + ", " + dbServer.IPAddress + ", " + dbServer.Port.ToString)
             Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port, dbServer.Engine)
             Dim jsondata = New JObject
             Try
@@ -87,25 +94,32 @@ Public Class HomeController
                     '            }
                     ' }
 
-                    System.Diagnostics.Debug.WriteLine("debug - result=" & result)
+                    If dbServer.Servername = "ob-murder" Or dbServer.Servername = "ob-lobby" Then
+                        System.Diagnostics.Debug.WriteLine("debug - result=" & result)
+                    End If
                     dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
                     If CheckPlayerCountChange(dbServer.Servername, dbServer.NumConnections) Then
+                        Dim playerlist As JArray = CType(jsondata.SelectToken("players").SelectToken("sample"), JArray)
                         If GlobalVariables.jointrackerDirection(dbServer.Servername) = "Up" Then
                             GlobalVariables.playjoinsound = True
-                            Dim playerlist As JArray = jsondata.SelectToken("players").SelectToken("sample")
                             If Not (playerlist Is Nothing) Then
+                                ' assumes the last player to join is the last of the list returned from the minecraft ping - might be alphabetical
                                 Dim idx As Integer = playerlist.Count - 1
-                                ' work in progress
-                                'If CountPlayersForServer(dbServer.Servername, GlobalVariables.jointrackerPlayer) = 5 Then
-                                '   RemoveOldestPlayerForServer(dbServer.Servername, GlobalVariables.jointrackerPlayer)
-                                'End If
-                                GlobalVariables.jointrackerPlayer(dbServer.Servername) = CType(playerlist.Item(idx).Item("name"), String) & " @ " & DateTime.Now.ToString("MM/dd HH:mm")
+                                'GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Add(CType(playerlist.Item(idx).Item("name"), String))
+                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
+                                'GlobalVariables.jointrackerPlayer(dbServer.Servername) = CType(playerlist.Item(idx).Item("name"), String) & " @ " & DateTime.Now.ToString("MM/dd HH:mm")
                             End If
                         ElseIf GlobalVariables.jointrackerDirection(dbServer.Servername) = "Down" Then
                             GlobalVariables.playleavesound = True
-                            ' work in progress
-                            ' remove departed player from list
+                            If Not (playerlist Is Nothing) Then
+                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
+                            Else
+                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Clear()
+                            End If
                         End If
+                    End If
+                    If dbServer.Servername = "ob-murder" Or dbServer.Servername = "ob-lobby" Then
+                        System.Diagnostics.Debug.WriteLine("debug - " & dbServer.Servername & " playerlist containts " & GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Count() & " players")
                     End If
                     Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
                     mcversion = Replace(mcversion, "Spigot ", "", 1)
