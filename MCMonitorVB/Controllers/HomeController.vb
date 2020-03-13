@@ -130,7 +130,13 @@ Public Class HomeController
                     Next
 
                     ' do a quick check to see if players are on the servers, but no data recorded - ie. when starting up monitor
-
+                    ' we can't add in the order they joined because we dont have that data, so just add them in the order the server gives them to us
+                    If dbServer.NumConnections > 0 And GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Count() = 0 And dbServer.Servername <> "ob-bungee" Then
+                        Dim playerlist As JArray = CType(jsondata.SelectToken("players").SelectToken("sample"), JArray)
+                        If playerlist.Count() > 0 Then
+                            GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
+                        End If
+                    End If
                     ' get and update any other information regarding server
                     Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
                     mcversion = Replace(mcversion, "Spigot ", "", 1)

@@ -75,33 +75,13 @@ Public Class ServerPlayerList
 
 	'Perform a full sync up between actual players and recorded list
 	Public Sub SyncList(ByRef jlist As JArray)
-		' convert the json array to a list - might be a better way of doing this.
-		Dim srvplayerlist As New List(Of String)
+		' add players on server and missing from tracker - e.g
+		'	when starting monitoring for the first time and players are on
 		For Each item As JObject In jlist
-			System.Diagnostics.Debug.WriteLine("debug - currentlist add " & CType(item.Item("name"), String))
-			srvplayerlist.Add(CType(item.Item("name"), String))
-		Next
-		' add misisng players - multiple might have joined since we last checked
-		'	some might have left also in the interim... cant catch them all with this
-		'	style of monitoring - requires server side plugin to do that.
-		For Each addplayer As String In srvplayerlist
-			If Not playerList.ContainsValue(addplayer) Then
-				Add(addplayer)
+			If Not playerList.ContainsValue(CType(item.Item("name"), String)) Then
+				Add(CType(item.Item("name"), String))
 			End If
 		Next
-		' mark anyone who's left as old data
-		'Dim removeList As New List(Of String)
-		For Each key In playerList.Keys
-			'	System.Diagnostics.Debug.WriteLine("debug - checking " & playerList(key) & " is in list")
-			If Not srvplayerlist.Contains(playerList(key)) Then
-				'System.Diagnostics.Debug.WriteLine("debug - removing " & playerList(key) & " from list")
-				'removeList.Add(key)
-				playerList.Item(key) = playerList(key) & "XX"
-			End If
-		Next
-		'For Each playerkey In removeList
-		'playerList.Remove(playerkey)
-		'Next
 		' debug dump
 		For Each key In playerList.Keys
 			System.Diagnostics.Debug.WriteLine("debug - " & key & " @ " & playerList(key))
