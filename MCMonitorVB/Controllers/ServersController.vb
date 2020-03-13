@@ -12,7 +12,7 @@ Namespace Controllers
     Public Class ServersController
         Inherits System.Web.Mvc.Controller
 
-        Private db As New MCMonitorDbContext
+        Private ReadOnly db As New MCMonitorDbContext
 
         ' GET: Servers
         Function Index() As ActionResult

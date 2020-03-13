@@ -8,4 +8,5 @@
 	Public Shared playleavesound As Boolean
 	Public Shared playserverdownalarm As Boolean
 	Public Const MAXPLAYERSTORE As Integer = 5
+	Public Shared trackerFilePosition As Long = 0
 End Class

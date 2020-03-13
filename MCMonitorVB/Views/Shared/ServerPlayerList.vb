@@ -14,7 +14,7 @@ Imports Newtonsoft.Json.Linq
 '	Instantiated per server and tracks player with timestamp
 Public Class ServerPlayerList
 
-	Private playerList As New SortedList()
+	Private ReadOnly playerList As New SortedList()
 
 	Public Sub New()
 	End Sub
@@ -25,7 +25,6 @@ Public Class ServerPlayerList
 		If playerList.Count = GlobalVariables.MAXPLAYERSTORE Then
 			playerList.RemoveAt(0)
 		End If
-		System.Diagnostics.Debug.WriteLine("debug - adding player " & player)
 		playerList.Add(DateTime.Now.ToString("MM/dd HH:mm:ss.fffff"), player)
 	End Sub
 
@@ -90,19 +89,19 @@ Public Class ServerPlayerList
 				Add(addplayer)
 			End If
 		Next
-		' remove anyone who's left - can't update the list directly from foreach loop, so
-		'	save off those we need to remove to a separate list and delete afterwards
-		Dim removeList As New List(Of String)
+		' mark anyone who's left as old data
+		'Dim removeList As New List(Of String)
 		For Each key In playerList.Keys
-			System.Diagnostics.Debug.WriteLine("debug - checking " & playerList(key) & " is in list")
-			If Not srvplayerlist.Exists(playerList(key)) Then
-				System.Diagnostics.Debug.WriteLine("debug - removing " & playerList(key) & " from list")
-				removeList.Add(key)
+			'	System.Diagnostics.Debug.WriteLine("debug - checking " & playerList(key) & " is in list")
+			If Not srvplayerlist.Contains(playerList(key)) Then
+				'System.Diagnostics.Debug.WriteLine("debug - removing " & playerList(key) & " from list")
+				'removeList.Add(key)
+				playerList.Item(key) = playerList(key) & "XX"
 			End If
 		Next
-		For Each playerkey In removeList
-			playerList.Remove(playerkey)
-		Next
+		'For Each playerkey In removeList
+		'playerList.Remove(playerkey)
+		'Next
 		' debug dump
 		For Each key In playerList.Keys
 			System.Diagnostics.Debug.WriteLine("debug - " & key & " @ " & playerList(key))

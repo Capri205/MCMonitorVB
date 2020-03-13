@@ -16,19 +16,26 @@ Imports Newtonsoft.Json.Linq
 Public Class HomeController
     Inherits System.Web.Mvc.Controller
 
-    Private db As New MCMonitorDbContext
-    Dim logincookie As CookieContainer
-    Dim querytype As String = "ping"
+    Private ReadOnly db As New MCMonitorDbContext
+    ReadOnly logincookie As CookieContainer
+    ReadOnly querytype As String = "ping"
 
     Public Sub New()
 
         GlobalVariables.playjoinsound = False
         GlobalVariables.playleavesound = False
 
+        ' Retrieve updated player join and leave events produced by the Bungeecord OBMetaProducer plugin
+        Dim playerupdates As String = GetPlayerUpdates("MCMonitor")
+        System.Diagnostics.Debug.WriteLine("debug - playerupdates=" & playerupdates)
+        Dim playerupdatesjson = JArray.Parse(playerupdates)
+        System.Diagnostics.Debug.WriteLine("debug - playerupdates has " & playerupdatesjson.Count() & " entries")
+
+        ' Iterate over our server list and make calls to the server for data and process player join and leave events for that server
         For Each dbServer In db.Servers
 
-            System.Diagnostics.Debug.WriteLine("debug -----------------------------------------")
-            ' Add our server to the tracker list of not already there
+            'System.Diagnostics.Debug.WriteLine("debug -----------------------------------------")
+            ' Add our server to the global tracker list of not already there
             If Not GlobalVariables.serverPlayerTracker.ContainsKey(dbServer.Servername) Then
                 GlobalVariables.serverPlayerTracker.Add(dbServer.Servername, New ServerPlayerList())
                 System.Diagnostics.Debug.WriteLine("debug - adding " & dbServer.Servername & " tracker")
@@ -37,9 +44,9 @@ Public Class HomeController
             ' Assume no change from prior check - determines sounds to play and possibly other things later
             GlobalVariables.jointrackerDirection(dbServer.Servername) = "NoChange"
 
-            ' Query the server
-            Dim result As String = getServerStatus(dbServer.IPAddress, dbServer.Port, dbServer.Engine)
-            System.Diagnostics.Debug.WriteLine("debug - result=" & result)
+            ' Query the server for version data etc and process it
+            Dim result As String = GetServerStatus(dbServer.IPAddress, dbServer.Port, dbServer.Engine)
+            'System.Diagnostics.Debug.WriteLine("debug - result=" & result)
 
             Dim jsondata = New JObject
             Try
@@ -59,6 +66,7 @@ Public Class HomeController
                     '  "Map":"gmod_fort_map","ModDir":"garrysmod","ModDesc":"Sandbox","AppID":4000,"Players":0,"MaxPlayers":16,
                     '  "Bots":0,"Dedicated":"d","Os":"l","Password":false,"Secure":true,"Version":"2019.11.12",
                     '  "ExtraDataFlags":177,"GamePort":27016,"SteamID":90132776141476868,"GameTags":" gm:sandbox","GameID":4000}
+
                     dbServer.NumConnections = jsondata.SelectToken("Players")
                     If CheckPlayerCountChange(dbServer.Servername, dbServer.NumConnections) Then
                         If GlobalVariables.jointrackerDirection(dbServer.Servername) = "Down" Then
@@ -96,33 +104,34 @@ Public Class HomeController
                     '            }
                     ' }
 
-                    'If dbServer.Servername = "ob-murder" Or dbServer.Servername = "ob-lobby" Then
-                    'System.Diagnostics.Debug.WriteLine("debug - result=" & result)
-                    'End If
+                    ' TODO: need to decide to use count from query or count() from actual playertracker updated by player updates
                     dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
+
+                    ' deterimne player count change and therefore sound to play
                     If CheckPlayerCountChange(dbServer.Servername, dbServer.NumConnections) Then
-                        Dim playerlist As JArray = CType(jsondata.SelectToken("players").SelectToken("sample"), JArray)
                         If GlobalVariables.jointrackerDirection(dbServer.Servername) = "Up" Then
                             GlobalVariables.playjoinsound = True
-                            If Not (playerlist Is Nothing) Then
-                                ' assumes the last player to join is the last of the list returned from the minecraft ping - might be alphabetical
-                                Dim idx As Integer = playerlist.Count - 1
-                                'GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Add(CType(playerlist.Item(idx).Item("name"), String))
-                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
-                                'GlobalVariables.jointrackerPlayer(dbServer.Servername) = CType(playerlist.Item(idx).Item("name"), String) & " @ " & DateTime.Now.ToString("MM/dd HH:mm")
-                            End If
-                        ElseIf GlobalVariables.jointrackerDirection(dbServer.Servername) = "Down" Then
-                            GlobalVariables.playleavesound = True
-                            If Not (playerlist Is Nothing) Then
-                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
-                            Else
-                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Clear()
+                            If GlobalVariables.jointrackerDirection(dbServer.Servername) = "Down" Then
+                                GlobalVariables.playleavesound = True
                             End If
                         End If
                     End If
-                    If dbServer.Servername = "ob-murder" Or dbServer.Servername = "ob-lobby" Then
-                        System.Diagnostics.Debug.WriteLine("debug - " & dbServer.Servername & " playerlist containts " & GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Count() & " players")
-                    End If
+
+                    ' process player updates for server
+                    For Each item As String In playerupdatesjson
+                        System.Diagnostics.Debug.WriteLine("debug - item = " & item)
+                        Dim tokens As String() = item.Split(New Char() {"#"c})
+                        System.Diagnostics.Debug.WriteLine("debug - event=" & tokens(0) & ", player=" & tokens(1) & ", server=" & tokens(2) & ",timestamp=" & tokens(3))
+                        If dbServer.Servername.Contains(tokens(2)) Then
+                            If tokens(0) = "ServerSwitchEvent" Then
+                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Add(tokens(1))
+                            End If
+                        End If
+                    Next
+
+                    ' do a quick check to see if players are on the servers, but no data recorded - ie. when starting up monitor
+
+                    ' get and update any other information regarding server
                     Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
                     mcversion = Replace(mcversion, "Spigot ", "", 1)
                     mcversion = Replace(mcversion, "OB-BungeeCord ", "", 1)
@@ -152,6 +161,7 @@ Public Class HomeController
                         dbServer.Engine = engine
                     End If
                 End If
+
             Catch
                 dbServer.IsUp = False
                 dbServer.NumConnections = 0
@@ -177,7 +187,7 @@ Public Class HomeController
         Return View()
     End Function
 
-    Private Function getServerStatus(ByVal ipaddr As String, ByVal port As Integer, ByVal servertype As String) As String
+    Private Function GetServerStatus(ByVal ipaddr As String, ByVal port As Integer, ByVal servertype As String) As String
         Dim encoding As New UTF8Encoding
         'Dim tempCookies As New CookieContainer
         Dim databytestr As String = ""
@@ -202,15 +212,42 @@ Public Class HomeController
         postreqstream.Write(byteData, 0, byteData.Length)
         postreqstream.Close()
 
-        Dim status As String = ""
         Dim postresponse As HttpWebResponse = DirectCast(postReq.GetResponse(), HttpWebResponse)
         'tempCookies.Add(postresponse.Cookies)
         'logincookie = tempCookies
         Dim postreqreader As New StreamReader(postresponse.GetResponseStream())
-        status = postreqreader.ReadToEnd()
+        Dim status = postreqreader.ReadToEnd()
 
         Return status
 
+    End Function
+
+    Private Function GetPlayerUpdates(ByVal qid As String) As String
+        Dim encoding As New UTF8Encoding
+        Dim databytestr As String = ""
+        databytestr = databytestr + "&id=" & qid
+        Dim byteData As Byte() = encoding.GetBytes(databytestr)
+        Dim postReq As HttpWebRequest
+        postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/puquery.php"), HttpWebRequest)
+        postReq.Method = "POST"
+        postReq.KeepAlive = True
+        postReq.ContentType = "application/x-www-form-urlencoded"
+        'postReq.CookieContainer = tempCookies
+        postReq.Referer = "https://ob-mc.net/serverquery/puquery.php"
+        'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
+        postReq.ContentLength = byteData.Length
+
+        Dim postreqstream As Stream = postReq.GetRequestStream()
+        postreqstream.Write(byteData, 0, byteData.Length)
+        postreqstream.Close()
+
+        Dim postresponse As HttpWebResponse = DirectCast(postReq.GetResponse(), HttpWebResponse)
+        'tempCookies.Add(postresponse.Cookies)
+        'logincookie = tempCookies
+        Dim postreqreader As New StreamReader(postresponse.GetResponseStream())
+        Dim updates = postreqreader.ReadToEnd()
+
+        Return updates
     End Function
 
     Private Function CheckPlayerCountChange(ByVal server As String, ByVal numcons As Integer)
@@ -218,11 +255,9 @@ Public Class HomeController
         If server <> "ob-bungee" Then
             If GlobalVariables.jointrackerConCnt.ContainsKey(server) Then
                 If numcons > GlobalVariables.jointrackerConCnt(server) Then
-                    System.Diagnostics.Debug.WriteLine("debug - player count up for " & server & " - conns changed to " & numcons)
                     countchanged = True
                     GlobalVariables.jointrackerDirection(server) = "Up"
                 ElseIf numcons < GlobalVariables.jointrackerConCnt(server) Then
-                    System.Diagnostics.Debug.WriteLine("debug - player count down for " & server & " - conns changed to " & numcons)
                     countchanged = True
                     GlobalVariables.jointrackerDirection(server) = "Down"
                 End If
