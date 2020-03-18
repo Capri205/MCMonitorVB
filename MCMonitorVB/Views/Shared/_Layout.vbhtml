@@ -6,7 +6,17 @@
 			<title>@ViewBag.Title - MCMonitor</title>
 @Styles.Render("~/Content/css")
 @Scripts.Render("~/bundles/modernizr")
+
+<script>
+function blinker() {
+	$('.blinking').fadeOut(500);
+	$('.blinking').fadeIn(500);
+}
+setInterval(blinker, 1000);
+</script>
+
 </head>
+
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">

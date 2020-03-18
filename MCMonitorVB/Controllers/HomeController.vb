@@ -27,9 +27,9 @@ Public Class HomeController
 
         ' Retrieve updated player join and leave events produced by the Bungeecord OBMetaProducer plugin
         Dim playerupdates As String = GetPlayerUpdates("MCMonitor")
-        System.Diagnostics.Debug.WriteLine("debug - playerupdates=" & playerupdates)
+        'System.Diagnostics.Debug.WriteLine("debug - playerupdates=" & playerupdates)
         Dim playerupdatesjson = JArray.Parse(playerupdates)
-        System.Diagnostics.Debug.WriteLine("debug - playerupdates has " & playerupdatesjson.Count() & " entries")
+        'System.Diagnostics.Debug.WriteLine("debug - playerupdates has " & playerupdatesjson.Count() & " entries")
 
         ' Iterate over our server list and make calls to the server for data and process player join and leave events for that server
         For Each dbServer In db.Servers
@@ -38,7 +38,7 @@ Public Class HomeController
             ' Add our server to the global tracker list of not already there
             If Not GlobalVariables.serverPlayerTracker.ContainsKey(dbServer.Servername) Then
                 GlobalVariables.serverPlayerTracker.Add(dbServer.Servername, New ServerPlayerList())
-                System.Diagnostics.Debug.WriteLine("debug - adding " & dbServer.Servername & " tracker")
+                'System.Diagnostics.Debug.WriteLine("debug - adding " & dbServer.Servername & " tracker")
             End If
 
             ' Assume no change from prior check - determines sounds to play and possibly other things later
@@ -119,9 +119,9 @@ Public Class HomeController
 
                     ' process player updates for server
                     For Each item As String In playerupdatesjson
-                        System.Diagnostics.Debug.WriteLine("debug - item = " & item)
+                        'System.Diagnostics.Debug.WriteLine("debug - item = " & item)
                         Dim tokens As String() = item.Split(New Char() {"#"c})
-                        System.Diagnostics.Debug.WriteLine("debug - event=" & tokens(0) & ", player=" & tokens(1) & ", server=" & tokens(2) & ",timestamp=" & tokens(3))
+                        'System.Diagnostics.Debug.WriteLine("debug - event=" & tokens(0) & ", player=" & tokens(1) & ", server=" & tokens(2) & ",timestamp=" & tokens(3))
                         If dbServer.Servername.Contains(tokens(2)) Then
                             If tokens(0) = "ServerSwitchEvent" Then
                                 GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Add(tokens(1))
@@ -137,6 +137,7 @@ Public Class HomeController
                             GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
                         End If
                     End If
+
                     ' get and update any other information regarding server
                     Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
                     mcversion = Replace(mcversion, "Spigot ", "", 1)

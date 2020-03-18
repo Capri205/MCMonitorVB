@@ -25,7 +25,10 @@ Public Class ServerPlayerList
 		If playerList.Count = GlobalVariables.MAXPLAYERSTORE Then
 			playerList.RemoveAt(0)
 		End If
+		'System.Diagnostics.Debug.WriteLine("debug - Add : " & player & " @ " & DateTime.Now.ToString("MM/dd HH:mm:ss.fffff").ToString())
 		playerList.Add(DateTime.Now.ToString("MM/dd HH:mm:ss.fffff"), player)
+		' need to introduce a minor 100ms delay as the timestamp isnt granular enough and fast loading of data can result in a duplicate key error
+		Threading.Thread.Sleep(100)
 	End Sub
 
 	' Add players from a JSON array
@@ -37,17 +40,21 @@ Public Class ServerPlayerList
 
 	' Return a concatenated player and timestamp string
 	Public Function GetPlayerListConcat() As List(Of String)
+		'For Each key In playerList.Keys
+		'System.Diagnostics.Debug.WriteLine("debug - fetching: " & key & " @ " & playerList(key))
+		'Next
 		Dim concatenatedList = New List(Of String)
 		For Each key In playerList.Keys
-			concatenatedList.Add(playerList(key) & " @ " & key.substring(0, key.IndexOf(".")))
+			concatenatedList.Add(playerList(key) & " @ " & key)
 		Next
+		concatenatedList.Reverse()
 		Return concatenatedList
 	End Function
 
 	' Return the latest player from list with timestamp
 	Public Function GetLatestPlayerConcat() As String
 		If playerList.Count > 0 Then
-			Return playerList.GetByIndex(playerList.Count - 1) & " @ " & playerList.GetKey(playerList.Count - 1).substring(0, playerList.GetKey(playerList.Count - 1).IndexOf("."))
+			Return playerList.GetByIndex(playerList.Count - 1) & " @ " & playerList.GetKey(playerList.Count - 1)
 		Else
 			Return "no data"
 		End If
@@ -73,7 +80,7 @@ Public Class ServerPlayerList
 		playerList.Clear()
 	End Sub
 
-	'Perform a full sync up between actual players and recorded list
+	'Perform a sync up between actual players and tracker list
 	Public Sub SyncList(ByRef jlist As JArray)
 		' add players on server and missing from tracker - e.g
 		'	when starting monitoring for the first time and players are on
@@ -83,8 +90,8 @@ Public Class ServerPlayerList
 			End If
 		Next
 		' debug dump
-		For Each key In playerList.Keys
-			System.Diagnostics.Debug.WriteLine("debug - " & key & " @ " & playerList(key))
-		Next
+		'For Each key In playerList.Keys
+		'System.Diagnostics.Debug.WriteLine("debug - " & key & " @ " & playerList(key))
+		'Next
 	End Sub
 End Class
