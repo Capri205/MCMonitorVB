@@ -92,10 +92,11 @@ End Code
 									@<span style="color:mediumvioletred">
 										@entry
 									</span>
-								ElseIf GlobalVariables.jointrackerDirection(item.Servername) = "Down" Then
-									@<span style="color:indigo">
-										@entry
-									</span>
+									' player who left isn't necessarily the last one who joined, so this is invalid
+									'ElseIf GlobalVariables.jointrackerDirection(item.Servername) = "Down" Then
+									'	@<span style="color:indigo">
+									'		@entry
+									'	</span>
 								Else
 									@entry
 								End If
