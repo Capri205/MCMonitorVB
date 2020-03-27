@@ -6,7 +6,7 @@
 	' Use for triggering a client side sound
 	Public Shared playjoinsound As Boolean
 	Public Shared playleavesound As Boolean
-	Public Shared playserverdownalarm As Boolean
+	Public Shared playalarmsound As Boolean
 	Public Const MAXPLAYERSTORE As Integer = 5
 	Public Shared trackerFilePosition As Long = 0
 End Class

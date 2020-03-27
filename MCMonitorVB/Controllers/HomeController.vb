@@ -24,6 +24,7 @@ Public Class HomeController
 
         GlobalVariables.playjoinsound = False
         GlobalVariables.playleavesound = False
+        GlobalVariables.playalarmsound = False
 
         ' Retrieve updated player join and leave events produced by the Bungeecord OBMetaProducer plugin
         Dim playerupdates As String = GetPlayerUpdates("MCMonitor")
@@ -172,6 +173,9 @@ Public Class HomeController
             Catch
                 dbServer.IsUp = False
                 dbServer.NumConnections = 0
+                If dbServer.Servername <> "ob-practice" Then
+                    GlobalVariables.playalarmsound = True
+                End If
             End Try
             dbServer.LastChecked = DateAndTime.Now
         Next

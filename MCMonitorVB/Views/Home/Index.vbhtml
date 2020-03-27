@@ -2,7 +2,9 @@
 
 @Code
 	Dim currEngine = "NaN"
-	If GlobalVariables.playjoinsound Then
+	If GlobalVariables.playalarmsound = True Then
+		@<audio src="/sounds/alarm.wav" autoplay="autoplay" preload="auto"></audio>
+	ElseIf GlobalVariables.playjoinsound Then
 		GlobalVariables.playleavesound = False
 		@<audio src="/sounds/joined.wav" autoplay="autoplay" preload="auto"></audio>
 	elseif GlobalVariables.playleavesound Then
@@ -58,7 +60,13 @@ End Code
 					@If item.IsUp Then
 						@<img src="/images/green_check_mark_circle.png" style="width:40px;height:40px" />
 					Else
-						@<img src="/images/red_batsu_mark_circle.png" style="width:40px;height:40px" />
+						If item.Servername <> "ob-practice" Then
+							@<div Class="blinking">
+								<img src="/images/red_batsu_mark_circle.png" style="width:40px;height:40px" />
+							</div>
+						Else
+							@<img src = "/images/red_batsu_mark_circle.png" style="width:40px;height:40px" />
+						End If
 					End If
 				</td>
 				<td>
