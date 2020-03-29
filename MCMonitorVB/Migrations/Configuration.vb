@@ -1,13 +1,19 @@
 ﻿Imports System
-Imports System.Collections.Generic
 Imports System.Data.Entity
+Imports System.Data.Entity.Migrations
+Imports System.Linq
 Imports MCMonitorVB.Models
 
+Namespace Migrations
 
-Namespace MCMonitorVB.Models
-    Public Class SeedData
-        Inherits DropCreateDatabaseIfModelChanges(Of MCMonitorDbContext)
-        Protected Overrides Sub Seed(ByVal context As MCMonitorDbContext)
+    Friend NotInheritable Class Configuration
+        Inherits DbMigrationsConfiguration(Of Models.MCMonitorDbContext)
+
+        Public Sub New()
+            AutomaticMigrationsEnabled = False
+        End Sub
+
+        Protected Overrides Sub Seed(context As Models.MCMonitorDbContext)
             Dim servers = New List(Of Server) From {
                 New Server With
                 {
@@ -304,7 +310,7 @@ Namespace MCMonitorVB.Models
                     .MCVersion = "1",
                     .Hostname = "ob-st1",
                     .IPAddress = "192.168.1.55",
-                    .Port = 26015,
+                    .Port = 27015,
                     .IsUp = False,
                     .NumConnections = 0,
                     .MaintenanceMode = False
@@ -319,7 +325,7 @@ Namespace MCMonitorVB.Models
                     .MCVersion = "1",
                     .Hostname = "ob-st1",
                     .IPAddress = "192.168.1.55",
-                    .Port = 26016,
+                    .Port = 27016,
                     .IsUp = False,
                     .NumConnections = 0,
                     .MaintenanceMode = False
@@ -327,5 +333,7 @@ Namespace MCMonitorVB.Models
             }
             servers.ForEach(Function(d) context.Servers.Add(d))
         End Sub
+
     End Class
+
 End Namespace

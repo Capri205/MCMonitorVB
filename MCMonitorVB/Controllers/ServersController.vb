@@ -41,7 +41,7 @@ Namespace Controllers
         'more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         <HttpPost()>
         <ValidateAntiForgeryToken()>
-        Function Create(<Bind(Include:="Id,Servername,MCServername,Description,Engine,EngineVersion,MCVersion,Hostname,IPAddress,Port")> ByVal server As Server) As ActionResult
+        Function Create(<Bind(Include:="Id,Servername,MCServername,Description,Engine,EngineVersion,MCVersion,Hostname,IPAddress,Port,MaintenanceMode")> ByVal server As Server) As ActionResult
             If ModelState.IsValid Then
                 db.Servers.Add(server)
                 db.SaveChanges()
@@ -67,7 +67,7 @@ Namespace Controllers
         'more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         <HttpPost()>
         <ValidateAntiForgeryToken()>
-        Function Edit(<Bind(Include:="Id,Servername,MCServername,Description,Engine,EngineVersion,MCVersion,Hostname,IPAddress,Port,,,")> ByVal server As Server) As ActionResult
+        Function Edit(<Bind(Include:="Id,Servername,MCServername,Description,Engine,EngineVersion,MCVersion,Hostname,IPAddress,Port,,,,MaintenanceMode")> ByVal server As Server) As ActionResult
             If ModelState.IsValid Then
                 db.Entry(server).State = EntityState.Modified
                 db.SaveChanges()

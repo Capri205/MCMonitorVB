@@ -9,80 +9,88 @@ End Code
 <div>
     <h4>Server</h4>
     <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.Servername)
-        </dt>
+	<dl class="dl-horizontal">
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.Servername)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.Servername)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.Servername)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.MCServername)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.MCServername)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.MCServername)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.MCServername)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.Description)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.Description)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.Description)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.Description)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.Engine)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.Engine)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.Engine)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.Engine)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.EngineVersion)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.EngineVersion)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.EngineVersion)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.EngineVersion)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.MCVersion)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.MCVersion)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.MCVersion)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.MCVersion)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.Hostname)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.Hostname)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.Hostname)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.Hostname)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.IPAddress)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.IPAddress)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.IPAddress)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.IPAddress)
+		</dd>
 
-        <dt>
-            @Html.DisplayNameFor(Function(model) model.Port)
-        </dt>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.Port)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(Function(model) model.Port)
-        </dd>
+		<dd>
+			@Html.DisplayFor(Function(model) model.Port)
+		</dd>
 
-    </dl>
+		<dt>
+			@Html.DisplayNameFor(Function(model) model.MaintenanceMode)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(Function(model) model.MaintenanceMode)
+		</dd>
+
+	</dl>
     @Using (Html.BeginForm())
         @Html.AntiForgeryToken()
 

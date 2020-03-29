@@ -55,12 +55,15 @@ End Code
 			@<tr>
 				<td>
 					@Html.DisplayFor(Function(modelItem) item.Servername)
+					@If item.MaintenanceMode Then
+						@<text>(m)</text>
+					End If
 				</td>
 				<td>
 					@If item.IsUp Then
 						@<img src="/images/green_check_mark_circle.png" style="width:40px;height:40px" />
 					Else
-						If item.Servername <> "ob-practice" Then
+						If Not item.MaintenanceMode Then
 							@<div Class="blinking">
 								<img src="/images/red_batsu_mark_circle.png" style="width:40px;height:40px" />
 							</div>

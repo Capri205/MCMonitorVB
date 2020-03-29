@@ -173,7 +173,7 @@ Public Class HomeController
             Catch
                 dbServer.IsUp = False
                 dbServer.NumConnections = 0
-                If dbServer.Servername <> "ob-practice" Then
+                If Not dbServer.MaintenanceMode Then
                     GlobalVariables.playalarmsound = True
                 End If
             End Try

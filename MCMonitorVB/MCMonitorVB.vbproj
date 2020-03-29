@@ -162,6 +162,11 @@
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003281853559_Initial.designer.vb">
+      <DependentUpon>202003281853559_Initial.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003281853559_Initial.vb" />
+    <Compile Include="Migrations\Configuration.vb" />
     <Compile Include="Models\SeedData.vb" />
     <Compile Include="Models\Server.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -184,6 +189,9 @@
     <Compile Include="Views\Shared\ServerPlayerList.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202003281853559_Initial.resx">
+      <DependentUpon>202003281853559_Initial.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
@@ -259,7 +267,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="images\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

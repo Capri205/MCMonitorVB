@@ -15,6 +15,7 @@ Namespace Models
         Public Property IsUp As Boolean?
         Public Property NumConnections As Integer?
         Public Property LastChecked As DateTime?
+        Public Property MaintenanceMode As Boolean?
     End Class
 
     Public Class MCMonitorDbContext
