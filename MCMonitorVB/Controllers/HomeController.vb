@@ -41,6 +41,10 @@ Public Class HomeController
                 GlobalVariables.serverPlayerTracker.Add(dbServer.Servername, New ServerPlayerList())
                 'System.Diagnostics.Debug.WriteLine("debug - adding " & dbServer.Servername & " tracker")
             End If
+            If Not GlobalVariables.eventcountTracker.ContainsKey(dbServer.Servername) Then
+                GlobalVariables.eventcountTracker.Add(dbServer.Servername, 0)
+            End If
+
 
             ' Assume no change from prior check - determines sounds to play and possibly other things later
             GlobalVariables.jointrackerDirection(dbServer.Servername) = "NoChange"
@@ -52,7 +56,9 @@ Public Class HomeController
             Dim jsondata = New JObject
             Try
                 jsondata = JObject.Parse(result)
+                ' TODO: Check jsondata has something
                 dbServer.IsUp = True
+                GlobalVariables.eventcountTracker.Item(dbServer.Servername) = 0
                 If dbServer.Engine = "Source" Then
                     '
                     ' SOURCE
@@ -106,7 +112,12 @@ Public Class HomeController
                     ' }
 
                     ' TODO: need to decide to use count from query or count() from actual playertracker updated by player updates
-                    dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
+                    dbServer.NumConnections = 0
+                    If jsondata IsNot Nothing Then
+                        If jsondata.ContainsKey("players") Then
+                            dbServer.NumConnections = jsondata.SelectToken("players").SelectToken("online")
+                        End If
+                    End If
 
                     ' deterimne player count change and therefore sound to play
                     If CheckPlayerCountChange(dbServer.Servername, dbServer.NumConnections) Then
@@ -130,56 +141,68 @@ Public Class HomeController
                         End If
                     Next
 
-                    ' do a quick check to see if players are on the servers, but no data recorded - ie. when starting up monitor
-                    ' we can't add in the order they joined because we dont have that data, so just add them in the order the server gives them to us
+                    ' check to see if players are on the servers, but no data recorded - ie. when starting up the monitoring
+                    ' note: we can't add in the order they joined because we dont have that data, so just add them in the order the server gives them to us
                     If dbServer.NumConnections > 0 And GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Count() = 0 And dbServer.Servername <> "ob-bungee" Then
                         Dim playerlist As JArray = CType(jsondata.SelectToken("players").SelectToken("sample"), JArray)
-                        If playerlist.Count() > 0 Then
-                            GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
+                        If Not playerlist Is Nothing Then
+                            If playerlist.Count() > 0 Then
+                                GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
+                            End If
                         End If
                     End If
 
                     ' get and update any other information regarding server
-                    Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
-                    mcversion = Replace(mcversion, "Spigot ", "", 1)
-                    mcversion = Replace(mcversion, "OB-BungeeCord ", "", 1)
-                    mcversion = Replace(mcversion, "thermos,cauldron,craftbukkit,mcpc,kcauldron,fml,forge ", "", 1)
-                    mcversion = Replace(mcversion, "Forge ", "", 1)
-                    If dbServer.MCVersion <> mcversion Then
-                        dbServer.MCVersion = mcversion
-                    End If
-                    Dim engine As String = ""
-                    If jsondata.ContainsKey("modinfo") Then
-                        If jsondata.SelectToken("modinfo").SelectToken("type") = "FML" Then
-                            engine = jsondata.SelectToken("modinfo").SelectToken("type").ToString
-                            Dim modlist As JArray = CType(jsondata.SelectToken("modinfo")("modList"), JArray)
-                            For Each item As JObject In modlist
-                                If CType(item("modid"), String) = "Forge" Then
-                                    Dim engineversion As String = CType(item("version"), String)
-                                    If dbServer.EngineVersion <> engineversion Then
-                                        dbServer.EngineVersion = engineversion
-                                    End If
-                                End If
-                            Next
+                    ' version
+                    If jsondata.ContainsKey("version") Then
+                        Dim mcversion As String = jsondata.SelectToken("version").SelectToken("name")
+                        mcversion = Replace(mcversion, "Spigot ", "", 1)
+                        mcversion = Replace(mcversion, "OB-BungeeCord ", "", 1)
+                        mcversion = Replace(mcversion, "thermos,cauldron,craftbukkit,mcpc,kcauldron,fml,forge ", "", 1)
+                        mcversion = Replace(mcversion, "Forge ", "", 1)
+                        If dbServer.MCVersion <> mcversion Then
+                            dbServer.MCVersion = mcversion
                         End If
-                    Else
-                        engine = jsondata.SelectToken("version").SelectToken("name").ToString.Substring(0, jsondata.SelectToken("version").SelectToken("name").ToString.IndexOf(" "))
-                    End If
-                    If engine <> dbServer.Engine Then
-                        dbServer.Engine = engine
+                        ' engine
+                        Dim engine As String = ""
+                        If jsondata.ContainsKey("modinfo") Then
+                            If jsondata.SelectToken("modinfo").SelectToken("type") = "FML" Then
+                                engine = jsondata.SelectToken("modinfo").SelectToken("type").ToString
+                                Dim modlist As JArray = CType(jsondata.SelectToken("modinfo")("modList"), JArray)
+                                For Each item As JObject In modlist
+                                    If CType(item("modid"), String) = "Forge" Then
+                                        Dim engineversion As String = CType(item("version"), String)
+                                        If dbServer.EngineVersion <> engineversion Then
+                                            dbServer.EngineVersion = engineversion
+                                        End If
+                                    End If
+                                Next
+                            End If
+                        Else
+                            engine = jsondata.SelectToken("version").SelectToken("name").ToString.Substring(0, jsondata.SelectToken("version").SelectToken("name").ToString.IndexOf(" "))
+                        End If
+                        If engine <> dbServer.Engine Then
+                            dbServer.Engine = engine
+                        End If
                     End If
                 End If
-
             Catch
                 dbServer.IsUp = False
                 dbServer.NumConnections = 0
                 If Not dbServer.MaintenanceMode Then
-                    GlobalVariables.playalarmsound = True
+                    If GlobalVariables.eventcountTracker.Item(dbServer.Servername) < GlobalVariables.MAXCHECKSB4ALARM Then
+                        GlobalVariables.eventcountTracker.Item(dbServer.Servername) = GlobalVariables.eventcountTracker.Item(dbServer.Servername) + 1
+                    Else
+                        GlobalVariables.playalarmsound = True
+                    End If
+
                 End If
             End Try
             dbServer.LastChecked = DateAndTime.Now
         Next
+
         db.SaveChanges()
+
     End Sub
 
     Function Index() As ActionResult

@@ -7,7 +7,7 @@ End Code
 
 @Using (Html.BeginForm())
     @Html.AntiForgeryToken()
-    
+
     @<div class="form-horizontal">
 	<!--
 		<h4>Server</h4>
@@ -104,7 +104,7 @@ End Code
 </div>
 End Using
 
-<div>
+					<div>
     @Html.ActionLink("Back to List", "Index")
 </div>
 
