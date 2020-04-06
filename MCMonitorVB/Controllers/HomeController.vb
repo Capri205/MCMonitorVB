@@ -195,7 +195,6 @@ Public Class HomeController
                     Else
                         GlobalVariables.playalarmsound = True
                     End If
-
                 End If
             End Try
             dbServer.LastChecked = DateAndTime.Now

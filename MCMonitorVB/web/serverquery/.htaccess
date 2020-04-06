@@ -1,0 +1,2 @@
+RewriteRule ^$ /index.php [R=301,L]
+RewriteRule ^/$ /index.php [R=301,L]
