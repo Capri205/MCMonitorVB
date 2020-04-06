@@ -1,9 +1,10 @@
-# PHP Source Query
+# PHP Minecraft/Source Query
 
-[![Build Status](https://img.shields.io/travis/com/xPaw/PHP-Source-Query.svg)](https://travis-ci.com/xPaw/PHP-Source-Query)
-[![Test Coverage](https://img.shields.io/coveralls/github/xPaw/PHP-Source-Query/master.svg)](https://coveralls.io/github/xPaw/PHP-Source-Query)
-[![Packagist Downloads](https://img.shields.io/packagist/dt/xpaw/php-source-query-class.svg)](https://packagist.org/packages/xpaw/php-source-query-class)
-[![Packagist Version](https://img.shields.io/packagist/v/xpaw/php-source-query-class.svg)](https://packagist.org/packages/xpaw/php-source-query-class)
+We are using the query library created by Pavel Djundik (xPaw) along with our own PHP wrapper scripts to gather data from the Minecraft and Source (CSGO, GMod) servers.
+
+Check out his github here: https://github.com/xPaw
+
+-=-=-=-=-=-=-=-=-=-=-=-=-
 
 This class was created to query game server which use the Source query protocol, this includes all source games, and all the games that implement Steamworks.
 
