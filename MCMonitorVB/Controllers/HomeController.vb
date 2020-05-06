@@ -232,12 +232,12 @@ Public Class HomeController
         databytestr = databytestr + "&ip=" & ipaddr & "&port=" & CStr(port)
         Dim byteData As Byte() = encoding.GetBytes(databytestr)
         Dim postReq As HttpWebRequest
-        postReq = DirectCast(WebRequest.Create("https://yourwebserver/serverquery/query.php"), HttpWebRequest)
+        postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
         'postReq.CookieContainer = tempCookies
-        postReq.Referer = "https://yourwebserver/serverquery/query.php"
+        postReq.Referer = "https://ob-mc.net/serverquery/query.php"
         'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
 
@@ -261,12 +261,12 @@ Public Class HomeController
         databytestr = databytestr + "&id=" & qid
         Dim byteData As Byte() = encoding.GetBytes(databytestr)
         Dim postReq As HttpWebRequest
-        postReq = DirectCast(WebRequest.Create("https://yourwebserver/serverquery/puquery.php"), HttpWebRequest)
+        postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/puquery.php"), HttpWebRequest)
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
         'postReq.CookieContainer = tempCookies
-        postReq.Referer = "https://yourwebserver/serverquery/puquery.php"
+        postReq.Referer = "https://ob-mc.net/serverquery/puquery.php"
         'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
 
