@@ -200,6 +200,7 @@ Public Class HomeController
             dbServer.LastChecked = DateAndTime.Now
         Next
 
+        db.Database.CommandTimeout = 1000
         db.SaveChanges()
 
     End Sub
@@ -232,12 +233,14 @@ Public Class HomeController
         databytestr = databytestr + "&ip=" & ipaddr & "&port=" & CStr(port)
         Dim byteData As Byte() = encoding.GetBytes(databytestr)
         Dim postReq As HttpWebRequest
-        postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
+        'postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/query.php"), HttpWebRequest)
+        postReq = DirectCast(WebRequest.Create("http://192.168.1.52:80/serverquery/query.php"), HttpWebRequest)
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
         'postReq.CookieContainer = tempCookies
-        postReq.Referer = "https://ob-mc.net/serverquery/query.php"
+        'postReq.Referer = "https://ob-mc.net/serverquery/query.php"
+        postReq.Referer = "http://192.168.1.52:80/serverquery/query.php"
         'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
 
@@ -261,14 +264,18 @@ Public Class HomeController
         databytestr = databytestr + "&id=" & qid
         Dim byteData As Byte() = encoding.GetBytes(databytestr)
         Dim postReq As HttpWebRequest
-        postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/puquery.php"), HttpWebRequest)
+        'postReq = DirectCast(WebRequest.Create("https://ob-mc.net/serverquery/puquery.php"), HttpWebRequest)
+        postReq = DirectCast(WebRequest.Create("http://192.168.1.52/serverquery/puquery.php"), HttpWebRequest)
         postReq.Method = "POST"
         postReq.KeepAlive = True
         postReq.ContentType = "application/x-www-form-urlencoded"
         'postReq.CookieContainer = tempCookies
-        postReq.Referer = "https://ob-mc.net/serverquery/puquery.php"
+        'postReq.Referer = "https://ob-mc.net/serverquery/puquery.php"
+        postReq.Referer = "http://192.168.1.52/serverquery/puquery.php"
         'postReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64, rv:26.0) Gecko/20100101 Firefox/26.0"
         postReq.ContentLength = byteData.Length
+
+        'TODO: Need to handle inability to connect to remote server
 
         Dim postreqstream As Stream = postReq.GetRequestStream()
         postreqstream.Write(byteData, 0, byteData.Length)
