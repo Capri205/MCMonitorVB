@@ -19,6 +19,7 @@ Public Class HomeController
     Private ReadOnly db As New MCMonitorDbContext
     ReadOnly logincookie As CookieContainer
     ReadOnly querytype As String = "ping"
+    Public Declare Function GetTickCount Lib "kernel32" () As Long
 
     Public Sub New()
 
@@ -200,9 +201,25 @@ Public Class HomeController
             dbServer.LastChecked = DateAndTime.Now
         Next
 
-        db.Database.CommandTimeout = 1000
-        db.SaveChanges()
+        Dim dbsave As Boolean = False
+        Do
+            Try
+                db.Database.CommandTimeout = 1000
+                db.SaveChanges()
+                dbsave = True
+            Catch ex As TimeoutException
+                Console.WriteLine("Timeout exception in saving database.. retry in 1 second")
+                Pause(1000)
+            End Try
+        Loop While (dbsave <> True)
 
+    End Sub
+    Sub Pause(Length As Long)
+        Dim OldTime As Long
+        OldTime = GetTickCount
+        Do
+            If GetTickCount >= OldTime + Length Then Exit Do
+        Loop
     End Sub
 
     Function Index() As ActionResult
