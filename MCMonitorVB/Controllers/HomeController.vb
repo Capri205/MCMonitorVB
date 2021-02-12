@@ -146,7 +146,7 @@ Public Class HomeController
                     ' note: we can't add in the order they joined because we dont have that data, so just add them in the order the server gives them to us
                     If dbServer.NumConnections > 0 And GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).Count() = 0 And dbServer.Servername <> "ob-bungee" Then
                         Dim playerlist As JArray = CType(jsondata.SelectToken("players").SelectToken("sample"), JArray)
-                        If Not playerlist Is Nothing Then
+                        If playerlist IsNot Nothing Then
                             If playerlist.Count() > 0 Then
                                 GlobalVariables.serverPlayerTracker.Item(dbServer.Servername).SyncList(playerlist)
                             End If
@@ -214,6 +214,7 @@ Public Class HomeController
         Loop While (dbsave <> True)
 
     End Sub
+
     Sub Pause(Length As Long)
         Dim OldTime As Long
         OldTime = GetTickCount
